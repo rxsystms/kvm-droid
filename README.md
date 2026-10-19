@@ -140,6 +140,17 @@ npm run dist
 
 The [desktop workflow](./.github/workflows/build-kvm-droid.yml) runs unit tests, syntax checks, an offline Electron smoke test, and native packaging on Linux, macOS and Windows. Installers are uploaded as workflow artifacts, not published automatically. These builds are unsigned; public distribution will need platform signing and macOS notarization. Native Windows/macOS behavior must be verified on those runners; local testing on Linux alone does not prove it.
 
+### releases
+
+Requires Bash and an authenticated [GitHub CLI](https://cli.github.com/) (`gh auth login`). From a clean, up-to-date `main`:
+
+```sh
+npm run release -- patch            # or minor, major, or an explicit version such as 1.2.0
+npm run release -- 1.2.0 --dry-run  # checks and tests only; changes nothing
+```
+
+The script runs tests, sets the version in `package.json`/`package-lock.json` (committing and pushing `Release vX.Y.Z` if it changed), waits for the desktop workflow to pass on that commit, tags `vX.Y.Z`, then creates a **draft** GitHub release with generated notes and the CI-built AppImage, DMG and EXE attached. It refuses to continue if the tag or release already exists or an installer name does not contain the version. Review the draft on GitHub and click **Publish release**. To release the current `package.json` version without bumping, pass it explicitly (e.g. `npm run release -- 1.0.1`).
+
 Dependency audit at implementation time: no production vulnerabilities; eight moderate development-only findings remain in electron-builder's `@electron/get` > `global-agent` > `roarr` > `sprintf-js` chain. These modules are not included in the packaged app. Avoid `npm audit fix --force`: it proposes downgrading the packaging toolchain to versions with more serious findings. Recheck when upgrading build tools.
 
 ### development checks

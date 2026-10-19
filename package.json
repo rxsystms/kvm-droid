@@ -14,7 +14,8 @@
     "smoke": "electron test/electron-smoke.cjs",
     "check": "node --check main.js && node --check preload.cjs && node --check renderer.js && node --check transport.js && node --check geometry.js && node --check screenshots.js && node --check ocr.js",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder --publish never"
+    "dist": "electron-builder --publish never",
+    "release": "bash release.sh"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "^1.0.0",
