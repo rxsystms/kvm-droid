@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>kvm-droid</title>
+  <link rel="icon" type="image/png" href="./resources/icon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./renderer.js"></script>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img id="app-logo" src="./resources/icon.png" alt="kvm-droid logo" width="44" height="44">
+      <div><h1>kvm-droid</h1><p>Screenshot-based control over SSH / Tailscale</p></div>
+    </div>
+    <span class="badge" id="connection-state">Not connected</span>
+  </header>
+  <form id="connection-form">
+    <label class="host-field">Host<input id="host" value="" required spellcheck="false" autocomplete="off"></label>
+    <label class="username-field">Username<input id="username" value="" required spellcheck="false" autocomplete="off"></label>
+    <label class="port">Port<input id="port" type="number" value="8022" min="1" max="65535" required></label>
+    <button id="connect" type="submit">Connect</button>
+  </form>
+  <main>
+    <aside id="screen-controls" aria-label="Screen controls">
+      <h2>Screen controls</h2>
+      <button id="selinux" disabled>Toggle SELinux <kbd>S</kbd></button>
+      <p id="device-info" class="hint">Display size and SELinux state checked on connection.</p>
+      <button id="refresh" disabled>Refresh <kbd>Space</kbd></button>
+      <label class="check"><input id="auto-refresh" type="checkbox" checked> Auto-refresh (10s)</label>
+      <hr>
+      <button id="save-screenshot" disabled>Save screenshot</button>
+      <button id="screenshot-directory" disabled>Choose save directory...</button>
+      <p id="screenshot-path" class="hint">Loading screenshot directory...</p>
+      <hr>
+      <h2>Offline OCR</h2>
+      <button id="ocr-screen" disabled>Read screen text</button>
+      <label for="ocr-text">Recognized text</label>
+      <textarea id="ocr-text" rows="8" readonly spellcheck="false" placeholder="Screen text will appear here."></textarea>
+      <p id="ocr-info" class="hint">English OCR of the displayed screenshot. Runs locally; no uploads.</p>
+    </aside>
+    <div id="screen-stage">
+    <section id="viewer" aria-label="Device screen" aria-busy="false">
+      <div id="placeholder"><h2>Your Android, remotely.</h2><p>Connect to see the screen.<br>SSH key authentication and root access are required.</p></div>
+      <img id="screen" alt="Remote Android screenshot; click to tap, drag to swipe" draggable="false" hidden>
+      <span id="working" hidden>Working...</span>
+    </section>
+    </div>
+    <aside id="device-controls" aria-label="Device controls">
+      <h2>Device controls</h2>
+      <button data-key="POWER" disabled>Power / wake</button>
+      <button data-key="HOME" disabled>Home</button>
+      <button data-key="BACK" disabled>Back</button>
+      <button data-key="APP_SWITCH" disabled>Recent apps</button>
+      <button id="pull-down-menu" disabled>Pull down menu</button>
+      <p class="hint">Press again to expand Quick Settings further.</p>
+      <div class="volume">
+        <button data-key="VOLUME_DOWN" disabled aria-label="Volume down">Vol -</button>
+        <button data-key="VOLUME_UP" disabled aria-label="Volume up">Vol +</button>
+      </div>
+      <hr>
+      <h2>Type on phone</h2>
+      <label for="phone-text">Text to send</label>
+      <input id="phone-text" type="text" maxlength="1000" pattern="[\x20-\x7e]+" autocomplete="off" spellcheck="false" disabled aria-describedby="phone-text-help">
+      <button id="send-text" disabled>Send text</button>
+      <div class="volume">
+        <button data-key="ENTER" disabled>Enter</button>
+        <button data-key="DEL" disabled>Backspace</button>
+      </div>
+      <p id="phone-text-help" class="hint">Tap a field on the phone first. Plain ASCII text only, up to 1000 characters. Press Enter here to send the text; use the Enter button to send Enter to the phone.</p>
+    </aside>
+  </main>
+  <footer>
+    <div class="footer-info">
+      <p id="interaction-help" class="hint">Click to tap. Drag to swipe. Hold to long-press, then release.<br>Each action fetches a new screenshot. Not a video stream; input and refresh may take a few seconds.</p>
+      <span id="frame-info" class="hint">No screenshot yet</span>
+    </div>
+    <div class="footer-status">
+      <p id="status" role="status" aria-live="polite">Ready to connect.</p>
+      <span id="pointer-coordinates" class="hint" aria-label="Screenshot pixel coordinates">X: -- / Y: --</span>
+    </div>
+    <p id="error" role="alert" hidden></p>
+  </footer>
+</body>
+</html>

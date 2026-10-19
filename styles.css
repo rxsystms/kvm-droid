@@ -1,0 +1,58 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; background: #11151c; color: #e2e8f0; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 22px; height: 100vh; display: flex; flex-direction: column; gap: 18px; }
+[hidden] { display: none !important; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+#app-logo { flex: none; padding: 8px; background: #e9d5ff; border-radius: 10px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 0 0 14px; }
+p { margin: 0; line-height: 1.5; }
+header p, .hint { color: #a0aec0; font-size: 12px; }
+.badge { color: #a0aec0; background: #202936; border-radius: 20px; padding: 6px 12px; font-size: 12px; white-space: nowrap; }
+.badge.connected { color: #78e0bc; }
+form { display: flex; align-items: end; gap: 12px; }
+.host-field { flex: 0 1 200px; min-width: 0; }
+.username-field { flex: 0 1 150px; min-width: 0; }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #b8c5d6; flex: 1; }
+.port { flex: 0 0 85px; }
+ border: 1px solid #364458; border-radius: 7px; background: #1b2430; color: #e2e8f0; padding: 10px 12px; }
+input, button, textarea { font: inherit; border: 1px solid #364458; border-radius: 7px; background: #1b2430; color: #e2e8f0; padding: 10px 12px; }
+input { width: 100%; min-width: 0; font-size: 14px; }
+textarea { width: 100%; min-width: 0; resize: vertical; font-size: 12px; }
+button { cursor: pointer; font-size: 13px; }
+button:hover:not(:disabled) { background: #2b3e54; border-color: #79b6ee; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid #79b6ee; outline-offset: 3px; }
+#connect { background: #2b5680; }
+#connect.disconnect { background: #63383e; border-color: #9b5e67; }
+main { flex: 1; min-height: 0; display: flex; gap: 20px; }
+#screen-stage { flex: 1; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+#viewer { flex: none; display: flex; align-items: center; justify-content: center; position: relative; background: #090c11; outline: 1px solid #283445; border-radius: 8px; overflow: hidden; }
+#placeholder { text-align: center; color: #a0aec0; font-size: 13px; padding: 20px; }
+#screen { display: block; width: 100%; height: 100%; object-fit: contain; touch-action: none; user-select: none; cursor: crosshair; }
+#viewer[aria-busy="true"] #screen { cursor: progress; opacity: .75; }
+#working { position: absolute; bottom: 16px; background: #202936; padding: 6px 14px; border-radius: 20px; font-size: 12px; pointer-events: none; }
+aside { flex: 0 0 184px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
+aside h2 { margin-bottom: 2px; }
+aside > * { flex-shrink: 0; }
+aside > label { flex: none; }
+#screenshot-path { overflow-wrap: anywhere; }
+.volume { display: flex; gap: 8px; }
+.volume button { flex: 1; }
+hr { width: 100%; border: 0; border-top: 1px solid #283445; margin: 4px 0; }
+.check { flex: none; flex-direction: row; align-items: center; font-size: 12px; margin: 4px 0; cursor: pointer; }
+.check input { width: auto; }
+kbd { font-family: inherit; font-size: 10px; color: #a0aec0; margin-left: 8px; }
+footer { flex: none; font-size: 12px; min-height: 22px; overflow-wrap: anywhere; }
+.footer-info { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+#interaction-help { flex: 1; min-width: 0; }
+#frame-info { flex: none; white-space: nowrap; }
+@media (max-width: 760px) {
+  .footer-info { flex-direction: column; gap: 4px; }
+}
+#status { color: #a0aec0; }
+.footer-status { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+#status { min-width: 0; }
+#pointer-coordinates { flex: none; margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#error { color: #ffb6b6; margin-top: 6px; max-height: 100px; overflow: auto; white-space: pre-wrap; user-select: text; }

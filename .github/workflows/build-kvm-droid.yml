@@ -1,0 +1,46 @@
+name: Build/test kvm-droid
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      KVM_DROID_HOST: ${{ secrets.KVM_DROID_HOST }}
+      KVM_DROID_USERNAME: ${{ secrets.KVM_DROID_USERNAME }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run check
+      - name: Electron smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run smoke
+      - name: Electron smoke test (macOS / Windows)
+        if: runner.os != 'Linux'
+        run: npm run smoke
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kvm-droid-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            dist/*.AppImage
+            dist/*.dmg
+            dist/*.exe
+          if-no-files-found: error
