@@ -9,7 +9,9 @@ let desktopData;
 let screenshotData;
 
 if (!smokeHost || !smokeUsername) {
-  throw new Error('Set KVM_DROID_HOST and KVM_DROID_USERNAME to your saved connection values before running the smoke test.');
+  // Throwing here would open Electron's error dialog and hang headless runs.
+  console.error('Set KVM_DROID_HOST and KVM_DROID_USERNAME to your saved connection values before running the smoke test.');
+  process.exit(1);
 }
 
 async function waitFor(window, expression, timeout = 35000) {
