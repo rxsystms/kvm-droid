@@ -4,13 +4,15 @@ A desktop app to interact remotely with your rooted Android device.
 
 No USB cable required!
 
-![](./resources/example.png)
-
-## build status:
+## build status
 
 https://github.com/rxsystms/kvm-droid/actions
 
 ![api](https://github.com/rxsystms/kvm-droid/actions/workflows/build-kvm-droid.yml/badge.svg)
+
+## Screenshots
+
+![](./resources/example.png)
 
 ## Features
 
