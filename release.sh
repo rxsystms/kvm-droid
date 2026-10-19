@@ -15,6 +15,30 @@ REMOTE=origin
 
 die() { echo "error: $*" >&2; exit 1; }
 step() { echo; echo "==> $*"; }
+mb() { awk -v b="$1" 'BEGIN { printf "%.0f MB", b / 1048576 }'; }
+
+# Run a silent command (stdout discarded) while showing elapsed time, so long transfers don't look stuck.
+with_timer() {
+  local label=$1 start=$SECONDS pid status
+  shift
+  "$@" >/dev/null &
+  pid=$!
+  if [[ -t 1 ]]; then
+    while kill -0 "$pid" 2>/dev/null; do
+      printf '\r  %s ... %ds' "$label" $((SECONDS - start))
+      sleep 1
+    done
+    printf '\r\033[K'
+  else
+    echo "  $label ..."
+  fi
+  wait "$pid" && status=0 || status=$?
+  if (( status )); then
+    echo "  $label ... failed"
+    return "$status"
+  fi
+  echo "  $label ... done ($((SECONDS - start))s)"
+}
 
 usage() {
   echo "usage: npm run release -- <X.Y.Z|patch|minor|major> [--dry-run]" >&2
@@ -102,24 +126,42 @@ step "Tag $TAG"
 git tag -a "$TAG" -m "kvm-droid $VERSION" "$SHA"
 git push "$REMOTE" "$TAG"
 
-step "Download installers"
+step "Download installers from CI run $RUN_ID"
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
-gh run download "$RUN_ID" --dir "$WORK"
+mapfile -t ARTIFACTS < <(gh api "repos/{owner}/{repo}/actions/runs/$RUN_ID/artifacts" \
+  --jq '.artifacts[] | select(.expired | not) | "\(.name)\t\(.size_in_bytes)"')
+(( ${#ARTIFACTS[@]} )) || die "run $RUN_ID has no artifacts (expired?)"
+TOTAL=0
+for entry in "${ARTIFACTS[@]}"; do TOTAL=$((TOTAL + ${entry#*$'\t'})); done
+echo "  ${#ARTIFACTS[@]} artifacts, $(mb "$TOTAL") total (zipped)"
+i=0
+for entry in "${ARTIFACTS[@]}"; do
+  i=$((i + 1))
+  name=${entry%%$'\t'*}
+  with_timer "[$i/${#ARTIFACTS[@]}] $name ($(mb "${entry#*$'\t'}"))" \
+    gh run download "$RUN_ID" --name "$name" --dir "$WORK/$name"
+done
 
+step "Verify installers"
 ASSETS=()
+TOTAL=0
 for pattern in '*.AppImage' '*.dmg' '*.exe'; do
   mapfile -d '' found < <(find "$WORK" -type f -name "$pattern" -print0)
   (( ${#found[@]} )) || die "no $pattern artifact in run $RUN_ID"
   for file in "${found[@]}"; do
     [[ "$(basename "$file")" == *"$VERSION"* ]] || die "$(basename "$file") does not match version $VERSION"
+    size=$(wc -c < "$file" | tr -d ' ')
+    TOTAL=$((TOTAL + size))
+    echo "  ok  $(basename "$file") ($(mb "$size"))"
     ASSETS+=("$file")
   done
 done
-printf '  %s\n' "${ASSETS[@]##*/}"
 
-step "Create draft release $TAG"
-URL=$(gh release create "$TAG" "${ASSETS[@]}" --draft --verify-tag --generate-notes --title "kvm-droid $VERSION")
+step "Creating draft release $TAG..."
+with_timer "Uploading ${#ASSETS[@]} installers ($(mb "$TOTAL"))" \
+  gh release create "$TAG" "${ASSETS[@]}" --draft --verify-tag --generate-notes --title "kvm-droid $VERSION"
+URL=$(gh release view "$TAG" --json url -q .url)
 echo
 echo "Draft release created: $URL"
 echo "Review the notes and assets, then click \"Publish release\"."
