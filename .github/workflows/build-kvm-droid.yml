@@ -17,8 +17,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-      KVM_DROID_HOST: ${{ secrets.KVM_DROID_HOST }}
-      KVM_DROID_USERNAME: ${{ secrets.KVM_DROID_USERNAME }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v4

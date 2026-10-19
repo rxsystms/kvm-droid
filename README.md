@@ -1,6 +1,6 @@
 # kvm-droid
 
-Interact remotely with your rooted Android device.
+A desktop app to interact remotely with your rooted Android device.
 
 No USB cable required!
 
@@ -130,7 +130,7 @@ npm run dist
 
 `pack` creates an unpacked app in `dist/`; `dist` creates an AppImage on Linux, a DMG on macOS, or an NSIS installer on Windows. Builds follow the host architecture by default; use `npm run dist -- --arm64` or `--x64` on a compatible host when needed. Packaging excludes development/test files.
 
-The [desktop workflow](./.github/workflows/build-kvm-droid.yml) runs unit tests, syntax checks, an offline Electron smoke test, and native packaging on Linux, macOS and Windows. Configure the `KVM_DROID_HOST` and `KVM_DROID_USERNAME` repository secrets with your saved connection values for the smoke test. Installers are uploaded as workflow artifacts, not published automatically. These builds are unsigned; public distribution will need platform signing and macOS notarization. Native Windows/macOS behavior must be verified on those runners; local testing on Linux alone does not prove it.
+The [desktop workflow](./.github/workflows/build-kvm-droid.yml) runs unit tests, syntax checks, an offline Electron smoke test, and native packaging on Linux, macOS and Windows. Installers are uploaded as workflow artifacts, not published automatically. These builds are unsigned; public distribution will need platform signing and macOS notarization. Native Windows/macOS behavior must be verified on those runners; local testing on Linux alone does not prove it.
 
 Dependency audit at implementation time: no production vulnerabilities; eight moderate development-only findings remain in electron-builder's `@electron/get` > `global-agent` > `roarr` > `sprintf-js` chain. These modules are not included in the packaged app. Avoid `npm audit fix --force`: it proposes downgrading the packaging toolchain to versions with more serious findings. Recheck when upgrading build tools.
 
@@ -142,7 +142,7 @@ npm run check
 npm run smoke
 ```
 
-The host, username, and port are remembered locally between launches. The smoke test uses `KVM_DROID_HOST` and `KVM_DROID_USERNAME` for its simulated connection; set them to your saved connection values before running `npm run smoke`. With `REMOTE_SMOKE=1`, the same command also connects to the real device, renders a screenshot, checks display-size and SELinux information, sends **Home**, pulls down the menu twice, checks Space and automatic refresh, and exercises the error UI. On an Enforcing device it tests **S** with an automatically cancelled confirmation; it never changes the real device's SELinux mode. This changes the phone's foreground screen.
+The host, username, and port are remembered locally between launches. `npm run smoke` simulates a connection using placeholder values, or `KVM_DROID_HOST` and `KVM_DROID_USERNAME` if set. With `REMOTE_SMOKE=1`, those two variables are required (use the values saved in the app), and the same command also connects to the real device, renders a screenshot, checks display-size and SELinux information, sends **Home**, pulls down the menu twice, checks Space and automatic refresh, and exercises the error UI. On an Enforcing device it tests **S** with an automatically cancelled confirmation; it never changes the real device's SELinux mode. This changes the phone's foreground screen.
 
 Tests cover connection validation, display-size parsing, SELinux toggling and confirmation, command construction, PNG dimensions, coordinate scaling, gestures, concurrency, and failure handling. For a real-device, read-only transport check:
 

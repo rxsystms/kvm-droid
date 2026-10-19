@@ -3,14 +3,16 @@ const assert = require('node:assert/strict');
 const { mkdtemp, rm, readFile } = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const smokeHost = process.env.KVM_DROID_HOST?.trim();
-const smokeUsername = process.env.KVM_DROID_USERNAME?.trim();
+const remoteSmoke = process.env.REMOTE_SMOKE === '1';
+// The offline run only simulates a connection, so placeholders suffice there.
+const smokeHost = process.env.KVM_DROID_HOST?.trim() || (remoteSmoke ? '' : 'android.example');
+const smokeUsername = process.env.KVM_DROID_USERNAME?.trim() || (remoteSmoke ? '' : 'android');
 let desktopData;
 let screenshotData;
 
 if (!smokeHost || !smokeUsername) {
   // Throwing here would open Electron's error dialog and hang headless runs.
-  console.error('Set KVM_DROID_HOST and KVM_DROID_USERNAME to your saved connection values before running the smoke test.');
+  console.error('REMOTE_SMOKE=1 needs your device connection: open the app and fill in host and username, then set KVM_DROID_HOST and KVM_DROID_USERNAME to those values.');
   process.exit(1);
 }
 
@@ -108,7 +110,7 @@ app.whenReady().then(async () => {
     assert.deepEqual(JSON.parse(await window.webContents.executeJavaScript(`JSON.stringify({
       host: localStorage.getItem('kvm-droid.host'),
       username: localStorage.getItem('kvm-droid.username'),
-    })`)), connection, 'connection fields are remembered');
+    })`)), JSON.parse(connection), 'connection fields are remembered');
     await waitFor(window, "!document.getElementById('save-screenshot').disabled");
     await window.webContents.executeJavaScript("document.getElementById('ocr-screen').click()");
     await waitFor(window, "document.getElementById('status').textContent === 'Offline OCR complete.' && !document.getElementById('ocr-screen').disabled", 60000);
@@ -170,7 +172,7 @@ app.whenReady().then(async () => {
     AndroidDevice.prototype.request = originalRequest;
   }
 
-  if (process.env.REMOTE_SMOKE === '1') {
+  if (remoteSmoke) {
     await window.webContents.executeJavaScript("document.getElementById('connect').click()");
     await waitFor(window, "!document.getElementById('screen').hidden && document.getElementById('viewer').getAttribute('aria-busy') === 'false'");
     const dimensions = await window.webContents.executeJavaScript(`(() => {
