@@ -29,6 +29,13 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run check
+      # Ubuntu 24.04 restricts unprivileged user namespaces, so Chromium needs its SUID sandbox helper.
+      - name: Configure Electron sandbox (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          node node_modules/electron/install.js
+          sudo chown root:root node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
       - name: Electron smoke test (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run smoke
