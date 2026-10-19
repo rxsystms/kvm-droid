@@ -320,12 +320,13 @@ app.whenReady().then(async () => {
 });
 
 // Chromium keeps profile files (e.g. DIPS-wal) locked on Windows until the process exits,
-// so temp-dir removal is best-effort and must never change the test result.
+// so temp-dir removal is best-effort and must never change the test result. Retrying is
+// pointless while the lock is held and cost ~130s per run on Windows CI.
 async function cleanup() {
   for (const dir of [desktopData, screenshotData]) {
     if (!dir) continue;
     try {
-      await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+      await rm(dir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`WARN: could not remove temp dir ${dir}: ${error.code || error.message}`);
     }
