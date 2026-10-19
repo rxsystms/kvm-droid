@@ -311,12 +311,23 @@ app.whenReady().then(async () => {
   const image = await window.webContents.capturePage();
   assert.equal(image.isEmpty(), false);
   console.log('PASS: app window paints successfully');
-  if (desktopData) await rm(desktopData, { recursive: true });
-  if (screenshotData) await rm(screenshotData, { recursive: true });
+  await cleanup();
   app.exit(0);
 }).catch(async (error) => {
   console.error(error);
-  if (desktopData) await rm(desktopData, { recursive: true });
-  if (screenshotData) await rm(screenshotData, { recursive: true });
+  await cleanup();
   app.exit(1);
 });
+
+// Chromium keeps profile files (e.g. DIPS-wal) locked on Windows until the process exits,
+// so temp-dir removal is best-effort and must never change the test result.
+async function cleanup() {
+  for (const dir of [desktopData, screenshotData]) {
+    if (!dir) continue;
+    try {
+      await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (error) {
+      console.warn(`WARN: could not remove temp dir ${dir}: ${error.code || error.message}`);
+    }
+  }
+}
