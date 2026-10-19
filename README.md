@@ -4,6 +4,10 @@ A desktop app to interact remotely with your rooted Android device.
 
 No USB cable required!
 
+## Feedback
+
+To provide feedback on this app, please open an [issue](https://github.com/rxsystms/kvm-droid/issues) here on github. We read all issues!
+
 ## build status
 
 https://github.com/rxsystms/kvm-droid/actions
@@ -16,10 +20,10 @@ https://github.com/rxsystms/kvm-droid/actions
 
 ## Features
 
+- Streaming screenshots with manual or automatic refresh
+- Remote control of your Android over ssh/Tailscale
 - Linux, macOS, and Windows desktop apps
-- Remote control over SSH / Tailscale
 - Existing SSH keys and host verification
-- Screenshot viewing with manual or automatic refresh
 - Adaptive portrait and landscape display
 - Tap, swipe, and long-press gestures
 - Home, Back, Recents, power, and volume controls
