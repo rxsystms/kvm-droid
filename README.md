@@ -6,6 +6,12 @@ No USB cable required!
 
 ![](./resources/example.png)
 
+## build status:
+
+https://github.com/rxsystms/kvm-droid/actions
+
+![api](https://github.com/rxsystms/kvm-droid/actions/workflows/build-kvm-droid.yml/badge.svg)
+
 ## Features
 
 - Linux, macOS, and Windows desktop apps
