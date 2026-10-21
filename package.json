@@ -1,79 +1,13 @@
 {
   "name": "kvm-droid",
-  "version": "1.0.3",
-  "private": true,
-  "productName": "kvm-droid",
-  "desktopName": "kvm-droid.desktop",
-  "license": "PolyForm-Noncommercial-1.0.0",
-  "description": "Lightweight screenshot-based Android remote control over SSH",
-  "type": "module",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "test": "node --test test/*.test.js",
-    "smoke": "electron test/electron-smoke.cjs",
-    "check": "node --check main.js && node --check preload.cjs && node --check renderer.js && node --check transport.js && node --check geometry.js && node --check screenshots.js && node --check ocr.js",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder --publish never",
-    "release": "bash release.sh"
+  "version": "1.1.1",
+  "publisher": "rxsystms",
+  "license": "LICENSE.md",
+  "engines": {
+    "node": ">=22.12.0"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "^1.0.0",
     "tesseract.js": "^7.0.0"
-  },
-  "devDependencies": {
-    "electron": "^42.0.0",
-    "electron-builder": "^26.15.3",
-    "sharp": "^0.35.5"
-  },
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "build": {
-    "appId": "com.rxsystms.androidremote",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "preload.cjs",
-      "transport.js",
-      "geometry.js",
-      "linux-desktop.js",
-      "screenshots.js",
-      "renderer.js",
-      "index.html",
-      "styles.css",
-      "ocr.js",
-      "resources/icon.png",
-      "package.json",
-      "LICENSE.md"
-    ],
-    "asarUnpack": [
-      "node_modules/tesseract.js/**",
-      "node_modules/tesseract.js-core/**",
-      "node_modules/@tesseract.js-data/**"
-    ],
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "category": "Utility",
-      "syncDesktopName": true,
-      "icon": "resources/icon.png"
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "category": "public.app-category.utilities",
-      "icon": "resources/icon.png"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "resources/icon.png"
-    }
   }
 }

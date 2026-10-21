@@ -4,15 +4,14 @@ A desktop app to interact remotely with your rooted Android device.
 
 No USB cable required!
 
-## Feedback
+## Feature requests
 
 To provide feedback on this app, please open an [issue](https://github.com/rxsystms/kvm-droid/issues) here on github. We read all issues!
 
-## build status
+## Downloads
 
-https://github.com/rxsystms/kvm-droid/actions
+Get the latest release here: https://github.com/rxsystms/kvm-droid/releases
 
-![api](https://github.com/rxsystms/kvm-droid/actions/workflows/build-kvm-droid.yml/badge.svg)
 
 ## Screenshots
 
@@ -94,124 +93,3 @@ Desktop targets: **Linux, macOS and Windows**. Packaged apps include Electron an
 - **Windows:** enable **OpenSSH Client** in Settings > Optional features, verify `ssh -V` works in PowerShell, and restart the app after installation. The app uses `ssh.exe` from PATH without a shell or visible console windows. Keys and known hosts normally live in `%USERPROFILE%\.ssh`.
 
 On Linux, startup registers `kvm-droid.desktop` and a copy of the purple icon in your user XDG data directory (normally `~/.local/share`). The desktop ID, X11 window class and Wayland app ID use `kvm-droid`, allowing GNOME's Super-key overview and dock to find the correct icon, including during `npm start`. No root access is needed. The launcher follows the most recently started development/unpacked/AppImage location; start the app again if you move it. Close older windows and reopen after an upgrade; an old Android Remote or generic Electron favorite may need to be unpinned and replaced with **kvm-droid**.
-
-The product was previously named Android Remote. Its existing application ID and `Android Remote` user-data directory are retained so installed-app identity and saved screenshot-directory preferences survive the rename. The source directory remains unchanged.
-
-First connect in a terminal to verify the host key and configure key authentication:
-
-```sh
-export IP=X.X.X.X
-ssh -p 8022 u0_a227@$IP
-# If key authentication is not already configured, run on your computer:
-ssh-copy-id -p 8022 u0_a227@$IP
-# Verify this succeeds without a password prompt:
-ssh -o BatchMode=yes -p 8022 u0_a227@$IP 'su -c id'
-```
-
-The app uses your existing SSH keys, SSH agent, config and known-hosts file. It never stores passwords or accepts unknown host keys automatically. Root access must work without an interactive prompt; approve Termux in the device's root manager if needed.
-
-On Windows PowerShell, set `$env:IP = "X.X.X.X"` instead of `export IP=...`. Windows does not normally include `ssh-copy-id`; if needed, generate a key with `ssh-keygen -t ed25519` and append its public key using:
-
-```powershell
-Get-Content "$HOME\.ssh\id_ed25519.pub" | ssh -p 8022 "u0_a227@$env:IP" 'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys'
-ssh -o BatchMode=yes -p 8022 "u0_a227@$env:IP" 'su -c id'
-```
-
-```sh
-npm ci
-npm start
-```
-
-Click **Connect** (the supplied device address is prefilled). Use **Power / wake** if the screen is off. The UI disables controls while a request is running, fetches a screenshot after each action, and shows SSH/root/capture errors explicitly. If input succeeds but the following screenshot fails, refresh rather than repeating the input blindly.
-
-Once connected, the button changes to **Disconnect** and the connection fields are locked. Disconnect stops automatic refresh, clears the screenshot and remembered device target, disables remote controls, and unlocks the fields for a new connection. Requests use individual SSH processes rather than a persistent SSH session. The button is disabled while a request is running; wait for it to finish before disconnecting. Disconnect does not change the phone's SELinux mode. Interaction tips and the latest screenshot dimensions/time are shown in the footer, outside the scrolling device controls.
-
-This is a screenshot viewer, not low-latency video or scrcpy. There is no Android app to install or web server. Packaged apps include Electron and the offline OCR engine/data. The renderer is sandboxed and only exposes narrowly scoped device and screenshot bridges; SSH executes in the main process with validated settings, allowlisted input commands and a 30-second timeout.
-
-The device was verified with SELinux **Enforcing**. The app never changes SELinux automatically; `setenforce 0` runs only after you explicitly request and confirm Permissive mode. The commands below are manual reference examples. Reducing SELinux protection is not normally needed.
-
-### desktop packages
-
-Build on the target operating system:
-
-```sh
-npm ci
-npm run pack
-npm run dist
-```
-
-`pack` creates an unpacked app in `dist/`; `dist` creates an AppImage on Linux, a DMG on macOS, or an NSIS installer on Windows. Builds follow the host architecture by default; use `npm run dist -- --arm64` or `--x64` on a compatible host when needed. Packaging excludes development/test files.
-
-The [desktop workflow](./.github/workflows/build-kvm-droid.yml) runs unit tests, syntax checks, an offline Electron smoke test, and native packaging on Linux, macOS and Windows. Installers are uploaded as workflow artifacts, not published automatically. These builds are unsigned; public distribution will need platform signing and macOS notarization. Native Windows/macOS behavior must be verified on those runners; local testing on Linux alone does not prove it.
-
-### releases
-
-Requires Bash and an authenticated [GitHub CLI](https://cli.github.com/) (`gh auth login`). From a clean, up-to-date `main`:
-
-```sh
-npm run release -- patch            # or minor, major, or an explicit version such as 1.2.0
-npm run release -- 1.2.0 --dry-run  # checks and tests only; changes nothing
-```
-
-The script runs tests, sets the version in `package.json`/`package-lock.json` (committing and pushing `Release vX.Y.Z` if it changed), waits for the desktop workflow to pass on that commit, tags `vX.Y.Z`, then creates a **draft** GitHub release with generated notes and the CI-built AppImage, DMG and EXE attached. It refuses to continue if the tag or release already exists or an installer name does not contain the version. Review the draft on GitHub and click **Publish release**. To release the current `package.json` version without bumping, pass it explicitly (e.g. `npm run release -- 1.0.1`).
-
-Dependency audit at implementation time: no production vulnerabilities; eight moderate development-only findings remain in electron-builder's `@electron/get` > `global-agent` > `roarr` > `sprintf-js` chain. These modules are not included in the packaged app. Avoid `npm audit fix --force`: it proposes downgrading the packaging toolchain to versions with more serious findings. Recheck when upgrading build tools.
-
-### development checks
-
-```sh
-npm test
-npm run check
-npm run smoke
-```
-
-The host, username, and port are remembered locally between launches. `npm run smoke` simulates a connection using placeholder values, or `KVM_DROID_HOST` and `KVM_DROID_USERNAME` if set. With `REMOTE_SMOKE=1`, those two variables are required (use the values saved in the app), and the same command also connects to the real device, renders a screenshot, checks display-size and SELinux information, sends **Home**, pulls down the menu twice, checks Space and automatic refresh, and exercises the error UI. On an Enforcing device it tests **S** with an automatically cancelled confirmation; it never changes the real device's SELinux mode. This changes the phone's foreground screen.
-
-Tests cover connection validation, display-size parsing, SELinux toggling and confirmation, command construction, PNG dimensions, coordinate scaling, gestures, concurrency, and failure handling. For a real-device, read-only transport check:
-
-```sh
-node --input-type=module -e '
-import { AndroidDevice } from "./transport.js";
-const frame = await new AndroidDevice().request({
-  type: "connect",
-  connection: { host: "X.X.X.X", username: "u0_a227", port: 8022 }
-});
-console.log(`${frame.width}x${frame.height}: screenshot received`);
-'
-```
-
-
-### commands
-
-```sh
-# login over ssh (Tailscale):
-export IP=X.X.X.X
-ssh -p 8022 u0_a227@$IP
-
-# take a screenshot
-# Optional troubleshooting only: switch SELinux to permissive
-su -c 'setenforce 0'
-su -c 'screencap -p /sdcard/qs-screenshot.png'
-# Restore enforcing mode after troubleshooting:
-su -c 'setenforce 1'
-
-# primary display size and SELinux state
-su -c 'wm size'
-su -c 'getenforce'
-
-# hardware buttons
-# home screen:
-su -c '/system/bin/input keyevent KEYCODE_HOME'
-# power button:
-su -c '/system/bin/input keyevent KEYCODE_POWER'
-
-
-# tap a specific point on the screen:
-su -c 'input tap 630 672'
-# swipe:
-su -c 'input swipe 500 0 500 900 300'
-
-# pull down top menu (repeat to expand further):
-su -c 'input swipe 500 0 500 900 300'
-
-```
